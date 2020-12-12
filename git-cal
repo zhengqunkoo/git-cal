@@ -69,9 +69,10 @@ sub process {
 sub process_current_repo {
     my $git_command = git_command();
     my @epochs      = qx/$git_command/;
+    @epochs = grep {/^\d/} @epochs;
 
     if ($?) {
-        print "fatal: git-cal failed to get the git log\n";
+        print "fatal: git-cal failed to get the mr log\n";
         exit(2);
     }
 
@@ -87,7 +88,7 @@ sub process_current_repo {
 }
 
 sub git_command {
-    my $command = qq{git log --no-merges --pretty=format:"%at" --since="13 months"};
+    my $command = qq{mr log --no-merges --pretty=format:"%at" --since="13 months"};
     $command .= qq{ --author="$author"} if $author;
     $command .= qq{ --all } if $all_branches;
     if ($filepath) {
@@ -394,7 +395,7 @@ sub configure {
     push @wanted, 'period' if (not defined $$period);
     push @wanted, 'author' if (not defined $$author);
     if (@wanted) {
-	my $git_command = "git config --get-regexp 'calendar\.*'";
+	my $git_command = "mr gitconfig --get-regexp 'calendar\.*' 2>/dev/null";
 	my @parts       = split(/\s/, qx/$git_command/);
 	if(@parts) {
 	    my %config;
